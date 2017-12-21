@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# stolen and adapted from: https://gerl1ng.de/post/borg/
+
+REPOSITORY=/data/backup/tp-borg
+TAG=daily
+
+# Backup all of /home and some other folders
+# except a few excluded directories
+borg create -v --progress --stats               \
+    $REPOSITORY::$TAG'-{now:%Y-%m-%d}'          \
+    /opt                                        \
+    /etc                                        \
+    /home                                       \
+    /root                                       \
+    --exclude '/home/*/.cache'                  \
+    --exclude '/home/*/.local'                  \
+    --exclude '/home/*/.pki'                    \
+    --exclude '/home/*/Virtualbox VMs'          \
+    --exclude '/home/*/.vagrant.d'              \
+    --exclude '/home/*/Books'                   \
+    --exclude '/home/*/Music'                   \
+    --exclude '/home/*/Video'                   \
+    --exclude '/home/*/vb-boxes'                \
+    --exclude '/home/*/Dropbox'                 \
+    --exclude '/root/.cache'                    \
+    --exclude '/root/.local'                    \
+    --exclude '/root/.pki'
+
+# Use the `prune` subcommand to maintain 14 daily, 8 weekly and 12 monthly
+# archives of THIS machine. The 'daily-' prefix is very important to
+# limit prune's operation to this machine's archives and not apply to
+# other machine's archives also.
+borg prune -v $REPOSITORY --prefix $TAG'-' \
+    --keep-daily=14 --keep-weekly=8 --keep-monthly=12
